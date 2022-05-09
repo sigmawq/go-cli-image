@@ -87,9 +87,18 @@ func main() {
 	unit := '#'
 	for vy := 0; vy < y; vy++ {
 		for vx := 0; vx < x; vx++ {
-			r, g, b, _ := color.RGBAModel.Convert(image.At(vx, vy)).RGBA()
+			r, g, b, a := color.RGBAModel.Convert(image.At(vx, vy)).RGBA()
 			color := [3]byte { byte(r), byte(g), byte(b) }
-			selColor := closestColor(colors[:], color)
+			alpha := float64(a)/65535.0
+			// fmt.Println(color)
+			color[0] = byte(float64(color[0]) * alpha)
+			color[1] = byte(float64(color[1]) * alpha)
+			color[2] = byte(float64(color[2]) * alpha)
+			// fmt.Println(alpha)
+			// fmt.Println(color)
+			selColor := closestColor(colors[:], color)	
+			// fmt.Println(selColor)
+			// panic(1)		
 
 			if selColor.rgb[0] == 0 && selColor.rgb[1] == 0 && selColor.rgb[2] == 0 {
 				fmt.Print(" ")
