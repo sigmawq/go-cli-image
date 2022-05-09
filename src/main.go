@@ -3,9 +3,11 @@ package main
 import (
 	"fmt"
 	"image/png"
+	"image/jpeg"
+	"image"
 	"image/color"
 	"math"
-	// "os"
+	"os"
 	"bytes"
 	"io/ioutil"
 )
@@ -60,51 +62,61 @@ func main() {
 		Color{"", [3]byte{0, 0, 0}},
 		Color{"\033[97m", [3]byte{192, 192, 192}}}
 
-	// fmt.Println(Red + "Red" + Reset)
-	fmt.Println(closestColor(colors[:], [3]byte{0, 255, 255}))
+	args := os.Args[1:]
+	if len(args) == 0 {
+		fmt.Println("cli-image <path> <draw-character>")
+		return
+	}
 
-	file, err := ioutil.ReadFile("test.png")
+	path := args[0]
+	unit := "#"
+	if len(args) >= 2 {
+		unit = args[1]
+	}
+
+	file, err := ioutil.ReadFile(path)
 	if err != nil {
 		panic(err)
 	}
 
-	image, err := png.Decode(bytes.NewReader(file))
-	if err != nil {
-		panic(err)
+	pngSignature := []byte { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A }
+	jpgSignature := []byte { 0xFF, 0xD8 }
+	var img image.Image
+	if bytes.Compare(file[0:8], pngSignature) == 0 {
+		img, err = png.Decode(bytes.NewReader(file))
+		if err != nil {
+			panic(err)
+		}
+	} else if bytes.Compare(file[0:2], jpgSignature) == 0 {
+		img, err = jpeg.Decode(bytes.NewReader(file))
+		if err != nil {
+			panic(err)
+		}
+	} else {
+		fmt.Printf("Only PNG and JPG are supported")
+		return
 	}
 
-	cm := image.ColorModel()
-	if cm != color.RGBAModel && cm != color.NRGBAModel && cm != color.AlphaModel && cm != color.GrayModel {
-		panic("Only PNG 8 bit per pixel are supported")
-	}
-
-	fmt.Println(image)
-	x0, y0 := image.Bounds().Min.X, image.Bounds().Min.Y 
-	x1, y1 := image.Bounds().Max.X, image.Bounds().Max.Y
+	x0, y0 := img.Bounds().Min.X, img.Bounds().Min.Y 
+	x1, y1 := img.Bounds().Max.X, img.Bounds().Max.Y
 	x := x1 - x0
 	y := y1 - y0
 
-	unit := '#'
 	for vy := 0; vy < y; vy++ {
 		for vx := 0; vx < x; vx++ {
-			r, g, b, a := color.RGBAModel.Convert(image.At(vx, vy)).RGBA()
+			r, g, b, a := color.RGBAModel.Convert(img.At(vx, vy)).RGBA()
 			color := [3]byte { byte(r), byte(g), byte(b) }
 			alpha := float64(a)/65535.0
-			// fmt.Println(color)
 			color[0] = byte(float64(color[0]) * alpha)
 			color[1] = byte(float64(color[1]) * alpha)
 			color[2] = byte(float64(color[2]) * alpha)
-			// fmt.Println(alpha)
-			// fmt.Println(color)
-			selColor := closestColor(colors[:], color)	
-			// fmt.Println(selColor)
-			// panic(1)		
+			selColor := closestColor(colors[:], color)
 
 			if selColor.rgb[0] == 0 && selColor.rgb[1] == 0 && selColor.rgb[2] == 0 {
 				fmt.Print(" ")
 				continue
 			}
-			fmt.Print(selColor.code + string(unit) + Reset)			
+			fmt.Print(selColor.code + unit + Reset)			
 		}
 		fmt.Printf("\n")
 	}
