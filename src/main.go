@@ -52,15 +52,16 @@ func closestColor(colors []Color, color [3]byte) Color {
 }
 
 func main() {
-	colors := [9]Color{Color{"\033[31m", [3]byte{255, 255, 255}},
-		Color{"\033[32m", [3]byte{128, 0, 0}},
-		Color{"\033[33m", [3]byte{0, 128, 0}},
-		Color{"\033[34m", [3]byte{128, 128, 0}},
-		Color{"\033[35m", [3]byte{0, 0, 128}},
-		Color{"\033[36m", [3]byte{128, 0, 128}},
-		Color{"\033[37m", [3]byte{0, 128, 128}},
-		Color{"", [3]byte{0, 0, 0}},
-		Color{"\033[97m", [3]byte{192, 192, 192}}}
+	colors := [9]Color{
+		Color{"\033[31m", [3]byte{128, 0, 0}}, // Red
+		Color{"\033[32m", [3]byte{0, 128, 0}}, // Green
+		Color{"\033[33m", [3]byte{128, 128, 0}}, // Yellow
+		Color{"\033[34m", [3]byte{0, 0, 128}}, // Blue
+		Color{"\033[35m", [3]byte{128, 0, 128}}, // Purple
+		Color{"\033[36m", [3]byte{0, 128, 128}}, // Cyan
+		Color{"\033[37m", [3]byte{192, 192, 192}}, // Gray
+		Color{"", [3]byte{0, 0, 0}}, // Black
+		Color{"\033[97m", [3]byte{255, 255, 255}}} // White
 
 	args := os.Args[1:]
 	if len(args) == 0 {
